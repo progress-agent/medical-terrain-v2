@@ -167,6 +167,58 @@ export const clinicalData = {
         status: "active",
         enrollment: 500,
         mechanism: "Sigma-1 receptor agonist"
+      },
+      {
+        id: "ad-p2-007",
+        name: "Semorinemab",
+        company: "Roche / Genentech",
+        phase: "Phase 2",
+        phaseNum: 2,
+        type: "biologic",
+        purpose: "disease-modifying",
+        status: "active",
+        enrollment: 420,
+        mechanism: "Anti-tau monoclonal antibody",
+        description: "Targets extracellular tau to prevent spread of pathology"
+      },
+      {
+        id: "ad-p2-008",
+        name: "Zagotenemab",
+        company: "Eli Lilly",
+        phase: "Phase 2",
+        phaseNum: 2,
+        type: "biologic",
+        purpose: "disease-modifying",
+        status: "active",
+        enrollment: 380,
+        mechanism: "Anti-tau monoclonal antibody",
+        description: "Targets aggregated tau in neurofibrillary tangles"
+      },
+      {
+        id: "ad-p2-009",
+        name: "Fosgonimeton",
+        company: "Athira Pharma",
+        phase: "Phase 2",
+        phaseNum: 2,
+        type: "small-molecule",
+        purpose: "disease-modifying",
+        status: "active",
+        enrollment: 240,
+        mechanism: "HGF/MET activator",
+        description: "Activates HGF/MET pathway for neuroprotection"
+      },
+      {
+        id: "ad-p2-010",
+        name: "Cervelestin",
+        company: "Novartis",
+        phase: "Phase 2",
+        phaseNum: 2,
+        type: "small-molecule",
+        purpose: "disease-modifying",
+        status: "recruiting",
+        enrollment: 280,
+        mechanism: "NLRP3 inflammasome inhibitor",
+        description: "Reduces neuroinflammation via NLRP3 inhibition"
       }
     ],
     phase1: [
@@ -218,6 +270,42 @@ export const clinicalData = {
         status: "recruiting",
         enrollment: 24,
         mechanism: "Tau PROTAC (protein degrader)"
+      },
+      {
+        id: "ad-p1-005",
+        name: "JNJ-63733657",
+        company: "Johnson & Johnson",
+        phase: "Phase 1",
+        phaseNum: 1,
+        type: "biologic",
+        purpose: "disease-modifying",
+        status: "active",
+        enrollment: 60,
+        mechanism: "Anti-tau monoclonal antibody"
+      },
+      {
+        id: "ad-p1-006",
+        name: "ACU193",
+        company: "Acumen Pharmaceuticals",
+        phase: "Phase 1",
+        phaseNum: 1,
+        type: "biologic",
+        purpose: "disease-modifying",
+        status: "active",
+        enrollment: 56,
+        mechanism: "Anti-AB oligomer antibody"
+      },
+      {
+        id: "ad-p1-007",
+        name: "BIIB113",
+        company: "Biogen",
+        phase: "Phase 1",
+        phaseNum: 1,
+        type: "small-molecule",
+        purpose: "disease-modifying",
+        status: "active",
+        enrollment: 48,
+        mechanism: "O-GlcNAcase inhibitor"
       }
     ],
     updates: [
@@ -244,6 +332,22 @@ export const clinicalData = {
         type: "enrolled",
         date: "2024-12-15",
         description: "INVOKE-2 Phase 2 trial reaches 50% enrollment milestone"
+      },
+      {
+        id: "upd-ad-004",
+        drugId: "ad-p3-002",
+        drugName: "Trontinemab",
+        type: "advance",
+        date: "2025-01-10",
+        description: "Brain shuttle technology shows 3x higher brain exposure vs traditional antibodies"
+      },
+      {
+        id: "upd-ad-005",
+        drugId: "ad-p2-007",
+        drugName: "Semorinemab",
+        type: "results",
+        date: "2024-12-20",
+        description: "Phase 2 LAURIET study shows slowing of cognitive decline in moderate AD"
       }
     ]
   },
@@ -357,6 +461,43 @@ export const clinicalData = {
         status: "recruiting",
         enrollment: 120,
         mechanism: "GBA activator"
+      },
+      {
+        id: "pd-p2-006",
+        name: "Soticlestat",
+        company: "Takeda",
+        phase: "Phase 2",
+        phaseNum: 2,
+        type: "small-molecule",
+        purpose: "symptomatic",
+        status: "active",
+        enrollment: 180,
+        mechanism: "Cholesterol 24-hydroxylase inhibitor"
+      },
+      {
+        id: "pd-p2-007",
+        name: "BIIB122",
+        company: "Biogen",
+        phase: "Phase 2",
+        phaseNum: 2,
+        type: "small-molecule",
+        purpose: "disease-modifying",
+        status: "recruiting",
+        enrollment: 200,
+        mechanism: "LRRK2 inhibitor",
+        description: "Targets LRRK2 kinase for genetic and sporadic PD"
+      },
+      {
+        id: "pd-p2-008",
+        name: "Bepranemab",
+        company: "UCB",
+        phase: "Phase 2",
+        phaseNum: 2,
+        type: "biologic",
+        purpose: "disease-modifying",
+        status: "active",
+        enrollment: 240,
+        mechanism: "Anti-alpha-synuclein antibody"
       }
     ],
     phase1: [
@@ -407,6 +548,30 @@ export const clinicalData = {
         status: "recruiting",
         enrollment: 12,
         mechanism: "Cell replacement therapy (dopamine neurons)"
+      },
+      {
+        id: "pd-p1-005",
+        name: "NLY01",
+        company: "Novartis",
+        phase: "Phase 1",
+        phaseNum: 1,
+        type: "biologic",
+        purpose: "disease-modifying",
+        status: "active",
+        enrollment: 48,
+        mechanism: "GLP-1 receptor agonist"
+      },
+      {
+        id: "pd-p1-006",
+        name: "UCB7853",
+        company: "UCB",
+        phase: "Phase 1",
+        phaseNum: 1,
+        type: "small-molecule",
+        purpose: "disease-modifying",
+        status: "active",
+        enrollment: 64,
+        mechanism: "Alpha-synuclein aggregation inhibitor"
       }
     ],
     updates: [
@@ -433,6 +598,22 @@ export const clinicalData = {
         type: "enrolled",
         date: "2024-12-10",
         description: "AFFiRiS alpha-synuclein vaccine completes Phase 1 enrollment"
+      },
+      {
+        id: "upd-pd-004",
+        drugId: "pd-p3-003",
+        drugName: "Prasinezumab",
+        type: "advance",
+        date: "2025-01-20",
+        description: "Phase 3 PADOVA study expands enrollment to 800 participants"
+      },
+      {
+        id: "upd-pd-005",
+        drugId: "pd-p2-008",
+        drugName: "Bepranemab",
+        type: "results",
+        date: "2025-01-08",
+        description: "Phase 2 data shows reduction in alpha-synuclein seeding activity"
       }
     ]
   }

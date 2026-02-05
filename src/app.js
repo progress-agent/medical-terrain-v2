@@ -30,15 +30,23 @@ const CONFIG = {
 // STATE
 // ============================================
 let currentFilter = 'all';
+let currentPhaseFilter = 'all';
+let currentTypeFilter = 'all';
+let currentPurposeFilter = 'all';
 let scene, camera, renderer, controls;
 let terrain, trialMarkers = [];
 let raycaster, mouse;
 let hoveredMarker = null;
+let isJourneyMode = false;
+let journeyProgress = 0;
 
 // ============================================
 // INITIALIZATION
 // ============================================
 function init() {
+  // Update loading text
+  updateLoadingText('Initializing 3D scene...');
+
   // Scene setup
   scene = new THREE.Scene();
   scene.background = new THREE.Color(CONFIG.colors.bg);
@@ -67,16 +75,20 @@ function init() {
   controls.autoRotate = true;
   controls.autoRotateSpeed = 0.3;
 
+  updateLoadingText('Setting up lighting...');
   // Lighting
   setupLighting();
 
+  updateLoadingText('Generating terrain...');
   // Terrain
   createTerrain();
   createPhaseZones();
 
+  updateLoadingText('Placing trial markers...');
   // Trial markers
   createAllTrialMarkers();
 
+  updateLoadingText('Adding atmosphere...');
   // Atmosphere
   createParticles();
   createFinishMarker();
@@ -92,21 +104,39 @@ function init() {
 
   // UI bindings
   bindDiseaseToggle();
+  bindFilterControls();
   bindPanelControls();
+  bindJourneyButton();
   renderUpdates();
+  updateStats();
+
+  // Hide loading screen
+  setTimeout(() => {
+    document.getElementById('loading-screen').classList.add('hidden');
+  }, 500);
 
   // Animation loop
   animate();
+}
+
+function updateLoadingText(text) {
+  const loadingText = document.querySelector('.loading-text');
+  if (loadingText) loadingText.textContent = text;
 }
 
 // ============================================
 // LIGHTING
 // ============================================
 function setupLighting() {
-  const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
+  // Hemisphere light for natural ambient fill
+  const hemiLight = new THREE.HemisphereLight(0x60a5fa, 0x1a1a1a, 0.6);
+  hemiLight.position.set(0, 100, 0);
+  scene.add(hemiLight);
+
+  const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
   scene.add(ambientLight);
 
-  const sunLight = new THREE.DirectionalLight(0xffffff, 0.9);
+  const sunLight = new THREE.DirectionalLight(0xffffff, 1.0);
   sunLight.position.set(60, 100, 60);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.width = 2048;
@@ -117,15 +147,25 @@ function setupLighting() {
   sunLight.shadow.camera.right = 100;
   sunLight.shadow.camera.top = 100;
   sunLight.shadow.camera.bottom = -100;
+  sunLight.shadow.bias = -0.0001;
   scene.add(sunLight);
 
-  const rimLight = new THREE.DirectionalLight(CONFIG.colors.gold, 0.4);
+  const rimLight = new THREE.DirectionalLight(CONFIG.colors.gold, 0.5);
   rimLight.position.set(-50, 30, -50);
   scene.add(rimLight);
 
-  const fillLight = new THREE.DirectionalLight(0x60a5fa, 0.2);
+  const fillLight = new THREE.DirectionalLight(0xc9b896, 0.3);
   fillLight.position.set(50, 20, -50);
   scene.add(fillLight);
+
+  // Point lights near the finish marker for dramatic effect
+  const finishLight1 = new THREE.PointLight(CONFIG.colors.gold, 1, 50);
+  finishLight1.position.set(0, 55, 0);
+  scene.add(finishLight1);
+
+  const finishLight2 = new THREE.PointLight(0xffffff, 0.5, 30);
+  finishLight2.position.set(10, 45, 10);
+  scene.add(finishLight2);
 }
 
 // ============================================
@@ -247,6 +287,9 @@ function createTrialMarker(trial, disease, phaseNum, index, totalInPhase) {
   const markerGroup = new THREE.Group();
   markerGroup.position.set(x, y, z);
 
+  // Store base Y for animation
+  const baseY = y;
+
   // Visual style based on drug type
   const isBiologic = trial.type === 'biologic';
   const markerColor = isBiologic ? CONFIG.colors.biologic : CONFIG.colors.lavender;
@@ -277,7 +320,7 @@ function createTrialMarker(trial, disease, phaseNum, index, totalInPhase) {
 
   const mesh = new THREE.Mesh(geometry, material);
   mesh.castShadow = true;
-  mesh.userData = { trial, disease, phaseNum, isMarker: true };
+  mesh.userData = { trial, disease, phaseNum, isMarker: true, baseY };
   markerGroup.add(mesh);
 
   // Add glow for active/approved
@@ -621,7 +664,7 @@ function closeDetailPanel() {
 }
 
 // ============================================
-// DISEASE FILTER
+// FILTERS
 // ============================================
 function bindDiseaseToggle() {
   document.querySelectorAll('.toggle-btn').forEach(btn => {
@@ -630,19 +673,167 @@ function bindDiseaseToggle() {
       btn.classList.add('active');
 
       currentFilter = btn.dataset.disease;
-      filterMarkers();
+      applyAllFilters();
     });
   });
 }
 
-function filterMarkers() {
+function bindFilterControls() {
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const filterType = btn.dataset.filter;
+      const value = btn.dataset.value;
+
+      // Update active state for this filter group
+      document.querySelectorAll(`.filter-btn[data-filter="${filterType}"]`).forEach(b => {
+        b.classList.remove('active');
+      });
+      btn.classList.add('active');
+
+      // Update filter state
+      if (filterType === 'phase') currentPhaseFilter = value;
+      else if (filterType === 'type') currentTypeFilter = value;
+      else if (filterType === 'purpose') currentPurposeFilter = value;
+
+      applyAllFilters();
+    });
+  });
+}
+
+function applyAllFilters() {
   trialMarkers.forEach(marker => {
+    const trial = marker.userData.trial;
     const disease = marker.userData.disease;
-    const visible = currentFilter === 'all' || currentFilter === disease;
+    const phaseNum = marker.userData.phaseNum;
+
+    // Disease filter
+    const diseaseMatch = currentFilter === 'all' || currentFilter === disease;
+
+    // Phase filter
+    const phaseMatch = currentPhaseFilter === 'all' || currentPhaseFilter === phaseNum.toString();
+
+    // Type filter
+    const typeMatch = currentTypeFilter === 'all' || currentTypeFilter === trial.type;
+
+    // Purpose filter
+    const purposeMatch = currentPurposeFilter === 'all' || currentPurposeFilter === trial.purpose;
+
+    const visible = diseaseMatch && phaseMatch && typeMatch && purposeMatch;
 
     marker.visible = visible;
     marker.parent.visible = visible;
+
+    // Animate visibility change
+    if (visible) {
+      marker.parent.scale.set(1, 1, 1);
+    } else {
+      marker.parent.scale.set(0.1, 0.1, 0.1);
+    }
   });
+
+  updateStats();
+}
+
+function filterMarkers() {
+  applyAllFilters();
+}
+
+// ============================================
+// STATS PANEL
+// ============================================
+function updateStats() {
+  let total = 0;
+  let active = 0;
+  let biologics = 0;
+  let smallMolecules = 0;
+  const phaseCounts = { 1: 0, 2: 0, 3: 0, 4: 0 };
+
+  trialMarkers.forEach(marker => {
+    if (!marker.visible) return;
+
+    const trial = marker.userData.trial;
+    const phaseNum = marker.userData.phaseNum;
+
+    total++;
+    if (trial.status === 'active' || trial.status === 'recruiting') active++;
+    if (trial.type === 'biologic') biologics++;
+    if (trial.type === 'small-molecule') smallMolecules++;
+    phaseCounts[phaseNum]++;
+  });
+
+  // Update stat values
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-active').textContent = active;
+  document.getElementById('stat-biologics').textContent = biologics;
+  document.getElementById('stat-small').textContent = smallMolecules;
+
+  // Update phase bars
+  const maxCount = Math.max(...Object.values(phaseCounts), 1);
+  for (let phase = 1; phase <= 4; phase++) {
+    const count = phaseCounts[phase];
+    const percentage = (count / maxCount) * 100;
+    document.getElementById(`bar-p${phase}`).style.width = `${percentage}%`;
+    document.getElementById(`count-p${phase}`).textContent = count;
+  }
+}
+
+// ============================================
+// JOURNEY MODE
+// ============================================
+function bindJourneyButton() {
+  document.getElementById('journeyBtn').addEventListener('click', toggleJourneyMode);
+}
+
+function toggleJourneyMode() {
+  const btn = document.getElementById('journeyBtn');
+  const icon = btn.querySelector('.journey-icon');
+
+  if (isJourneyMode) {
+    // Stop journey
+    isJourneyMode = false;
+    btn.classList.remove('playing');
+    icon.textContent = '▶';
+    controls.autoRotate = true;
+    journeyProgress = 0;
+  } else {
+    // Start journey
+    isJourneyMode = true;
+    btn.classList.add('playing');
+    icon.textContent = '⏸';
+    controls.autoRotate = false;
+    journeyProgress = 0;
+  }
+}
+
+function updateJourneyMode(delta) {
+  if (!isJourneyMode) return;
+
+  journeyProgress += delta * 0.05; // Speed of journey
+
+  if (journeyProgress > 1) {
+    journeyProgress = 0; // Loop
+  }
+
+  // Camera path: from valley (Phase 1) to summit (Approved)
+  // Start position: wide view of valley
+  // End position: close to finish marker
+
+  const startPos = new THREE.Vector3(0, 60, 120);
+  const endPos = new THREE.Vector3(0, 55, 20);
+
+  // Add some curve to the path
+  const curve = new THREE.QuadraticBezierCurve3(
+    startPos,
+    new THREE.Vector3(60, 80, 70),
+    endPos
+  );
+
+  const point = curve.getPoint(journeyProgress);
+  camera.position.copy(point);
+
+  // Look at the center, gradually moving up
+  const lookAtY = 5 + journeyProgress * 40;
+  controls.target.set(0, lookAtY, -journeyProgress * 30);
 }
 
 // ============================================
@@ -675,12 +866,21 @@ function formatDate(dateStr) {
 // ============================================
 // ANIMATION
 // ============================================
-function animate() {
+let lastTime = 0;
+
+function animate(currentTime = 0) {
   requestAnimationFrame(animate);
 
+  const delta = (currentTime - lastTime) / 1000;
+  lastTime = currentTime;
   const time = Date.now() * 0.001;
 
   controls.update();
+
+  // Journey mode
+  if (isJourneyMode && delta) {
+    updateJourneyMode(delta);
+  }
 
   // Animate particles
   scene.children.forEach(child => {
@@ -696,13 +896,24 @@ function animate() {
     }
   });
 
-  // Animate active trial markers
+  // Animate active trial markers with smoother easing
   trialMarkers.forEach((marker, i) => {
     const trial = marker.userData.trial;
-    if ((trial.status === 'active' || trial.status === 'recruiting') && marker.visible) {
-      marker.parent.position.y += Math.sin(time * 2 + i) * 0.008;
-      marker.rotation.y += 0.005;
+    if (!marker.visible) return;
+
+    // Smooth floating animation for active trials
+    if (trial.status === 'active' || trial.status === 'recruiting') {
+      const floatY = Math.sin(time * 1.5 + i * 0.5) * 0.3;
+      const targetY = marker.userData.baseY + floatY;
+      marker.parent.position.y += (targetY - marker.parent.position.y) * 0.05;
+      marker.rotation.y += 0.003;
     }
+
+    // Smooth scale transitions
+    const targetScale = marker.visible ? 1 : 0.1;
+    const currentScale = marker.parent.scale.x;
+    const newScale = currentScale + (targetScale - currentScale) * 0.1;
+    marker.parent.scale.set(newScale, newScale, newScale);
   });
 
   renderer.render(scene, camera);

@@ -571,9 +571,273 @@
       background: var(--fg-muted);
     }
 
+    /* Loading Screen */
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    #loading-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loading-content {
+      text-align: center;
+    }
+
+    .loading-logo {
+      font-family: var(--font-mono);
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+
+    .loading-bar {
+      width: 200px;
+      height: 2px;
+      background: var(--border);
+      border-radius: 1px;
+      overflow: hidden;
+      margin: 0 auto 16px;
+    }
+
+    .loading-progress {
+      height: 100%;
+      background: var(--gold);
+      width: 0%;
+      transition: width 0.3s ease;
+      animation: loadingPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes loadingPulse {
+      0% { width: 0%; opacity: 1; }
+      50% { width: 100%; opacity: 0.5; }
+      100% { width: 100%; opacity: 0; }
+    }
+
+    .loading-text {
+      font-size: 12px;
+      color: var(--fg-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* Filter Controls */
+    .filter-controls {
+      position: absolute;
+      top: 80px;
+      left: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .filter-group {
+      background: var(--bg-card);
+      padding: 12px 16px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+    }
+
+    .filter-group label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--fg-muted);
+      margin-bottom: 8px;
+      font-family: var(--font-mono);
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 6px;
+    }
+
+    .filter-btn {
+      padding: 6px 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--fg-secondary);
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: var(--radius);
+      transition: all var(--transition);
+    }
+
+    .filter-btn:hover {
+      border-color: var(--gold);
+      color: var(--fg);
+    }
+
+    .filter-btn.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: var(--bg);
+    }
+
+    /* Journey Button */
+    .journey-btn {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      border-radius: var(--radius-lg);
+      transition: all var(--transition);
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .journey-btn:hover {
+      background: var(--gold);
+      color: var(--bg);
+    }
+
+    .journey-btn.playing {
+      background: var(--gold);
+      color: var(--bg);
+    }
+
+    .journey-btn.playing .journey-icon {
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Stats Panel */
+    .stats-panel {
+      position: absolute;
+      top: 280px;
+      right: 24px;
+      width: 220px;
+      background: var(--bg-card);
+      padding: 20px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      pointer-events: auto;
+    }
+
+    .stats-panel h3 {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      margin-bottom: 16px;
+      font-family: var(--font-mono);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 12px;
+      background: var(--bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .stat-value {
+      display: block;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--fg);
+      font-family: var(--font-mono);
+    }
+
+    .stat-label {
+      display: block;
+      font-size: 10px;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+
+    .phase-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .phase-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .phase-bar .phase-label {
+      font-size: 10px;
+      color: var(--fg-muted);
+      font-family: var(--font-mono);
+      width: 24px;
+    }
+
+    .phase-bar .bar {
+      flex: 1;
+      height: 6px;
+      background: var(--bg);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .phase-bar .bar-fill {
+      height: 100%;
+      background: var(--blue);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .phase-bar .bar-fill.approved {
+      background: var(--gold);
+    }
+
+    .phase-bar .phase-count {
+      font-size: 11px;
+      color: var(--fg-secondary);
+      font-family: var(--font-mono);
+      width: 20px;
+      text-align: right;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
-      .legend {
+      .legend, .stats-panel, .filter-controls {
         display: none;
       }
 
@@ -589,11 +853,18 @@
       .updates-section {
         left: 12px;
         right: 12px;
-        bottom: 12px;
+        bottom: 80px;
       }
 
       .update-card {
         width: 260px;
+      }
+
+      .journey-btn {
+        bottom: 24px;
+        right: 12px;
+        left: 12px;
+        justify-content: center;
       }
     }
   </style>
@@ -607,6 +878,17 @@
   </script>
 </head>
 <body>
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="loading-content">
+      <div class="loading-logo">ProgRess</div>
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+      <div class="loading-text">Building terrain...</div>
+    </div>
+  </div>
+
   <div id="canvas-container"></div>
 
   <div id="ui">
@@ -622,6 +904,87 @@
       <button class="toggle-btn active" data-disease="all">All</button>
       <button class="toggle-btn" data-disease="alzheimers">Alzheimer's</button>
       <button class="toggle-btn" data-disease="parkinsons">Parkinson's</button>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="filter-controls">
+      <div class="filter-group">
+        <label>Phase</label>
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="phase" data-value="all">All</button>
+          <button class="filter-btn" data-filter="phase" data-value="1">P1</button>
+          <button class="filter-btn" data-filter="phase" data-value="2">P2</button>
+          <button class="filter-btn" data-filter="phase" data-value="3">P3</button>
+          <button class="filter-btn" data-filter="phase" data-value="4">App</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>Type</label>
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="type" data-value="all">All</button>
+          <button class="filter-btn" data-filter="type" data-value="biologic">Bio</button>
+          <button class="filter-btn" data-filter="type" data-value="small-molecule">SM</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>Purpose</label>
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="purpose" data-value="all">All</button>
+          <button class="filter-btn" data-filter="purpose" data-value="disease-modifying">DM</button>
+          <button class="filter-btn" data-filter="purpose" data-value="symptomatic">Sym</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Journey Mode Button -->
+    <button class="journey-btn" id="journeyBtn">
+      <span class="journey-icon">▶</span>
+      <span class="journey-text">Journey</span>
+    </button>
+
+    <!-- Stats Panel -->
+    <div class="stats-panel" id="statsPanel">
+      <h3>Trial Statistics</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-value" id="stat-total">0</span>
+          <span class="stat-label">Total</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="stat-active">0</span>
+          <span class="stat-label">Active</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="stat-biologics">0</span>
+          <span class="stat-label">Biologics</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="stat-small">0</span>
+          <span class="stat-label">Small Mol</span>
+        </div>
+      </div>
+      <div class="phase-bars">
+        <div class="phase-bar">
+          <span class="phase-label">P1</span>
+          <div class="bar"><div class="bar-fill" id="bar-p1" style="width: 0%"></div></div>
+          <span class="phase-count" id="count-p1">0</span>
+        </div>
+        <div class="phase-bar">
+          <span class="phase-label">P2</span>
+          <div class="bar"><div class="bar-fill" id="bar-p2" style="width: 0%"></div></div>
+          <span class="phase-count" id="count-p2">0</span>
+        </div>
+        <div class="phase-bar">
+          <span class="phase-label">P3</span>
+          <div class="bar"><div class="bar-fill" id="bar-p3" style="width: 0%"></div></div>
+          <span class="phase-count" id="count-p3">0</span>
+        </div>
+        <div class="phase-bar">
+          <span class="phase-label">App</span>
+          <div class="bar"><div class="bar-fill approved" id="bar-p4" style="width: 0%"></div></div>
+          <span class="phase-count" id="count-p4">0</span>
+        </div>
+      </div>
     </div>
 
     <!-- Legend -->

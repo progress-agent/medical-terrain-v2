@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProgRess | Neurodegenerative Trials Terrain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --fg: #fafafa;
+      --fg-secondary: #a3a3a3;
+      --fg-muted: #737373;
+      --bg: #0a0a0a;
+      --bg-card: #141414;
+      --bg-elevated: #1a1a1a;
+      --border: #262626;
+      --border-subtle: #1f1f1f;
+      --gold: #c9b896;
+      --lavender: #a78bfa;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+      --alzheimers: #60a5fa;
+      --parkinsons: #f472b6;
+      --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+      --radius: 6px;
+      --radius-lg: 10px;
+      --transition: 180ms ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--fg);
+      overflow: hidden;
+      line-height: 1.5;
+    }
+
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    #ui {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* Header */
+    .header {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      pointer-events: auto;
+    }
+
+    .logo {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+      color: var(--fg);
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 14px;
+      color: var(--fg-muted);
+      max-width: 360px;
+    }
+
+    /* Disease Toggle */
+    .disease-toggle {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      display: flex;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    .toggle-btn {
+      padding: 10px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--fg-secondary);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      border-radius: var(--radius);
+      transition: all var(--transition);
+    }
+
+    .toggle-btn:hover {
+      background: var(--bg-elevated);
+      border-color: var(--gold);
+      color: var(--fg);
+    }
+
+    .toggle-btn.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: var(--bg);
+    }
+
+    /* Legend */
+    .legend {
+      position: absolute;
+      top: 100px;
+      right: 24px;
+      background: var(--bg-card);
+      padding: 20px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      pointer-events: auto;
+      min-width: 220px;
+    }
+
+    .legend h3 {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      margin-bottom: 16px;
+      font-family: var(--font-mono);
+    }
+
+    .legend-section {
+      margin-bottom: 16px;
+    }
+
+    .legend-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .legend-section h4 {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--fg-muted);
+      margin-bottom: 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--fg-secondary);
+      margin-bottom: 8px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .legend-line {
+      width: 20px;
+      height: 2px;
+    }
+
+    .legend-marker {
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--gold);
+    }
+
+    .legend-marker.biologic {
+      border-radius: 50%;
+      border-style: solid;
+    }
+
+    .legend-marker.small-molecule {
+      border-radius: 2px;
+      background: var(--gold);
+    }
+
+    /* Phase Labels */
+    .phase-labels {
+      position: absolute;
+      left: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 60px;
+      pointer-events: none;
+    }
+
+    .phase-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--fg-muted);
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+    }
+
+    /* Finish Marker */
+    .finish-marker {
+      position: absolute;
+      top: 12%;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .finish-marker .icon {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .finish-marker .label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      background: var(--bg-card);
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity var(--transition);
+      max-width: 300px;
+      z-index: 100;
+    }
+
+    .tooltip.visible {
+      opacity: 1;
+    }
+
+    .tooltip h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+
+    .tooltip .company {
+      font-size: 12px;
+      color: var(--fg-muted);
+      margin-bottom: 12px;
+    }
+
+    .tooltip .details {
+      display: flex;
+      gap: 16px;
+      font-size: 11px;
+      color: var(--fg-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .tooltip .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tooltip .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--bg-elevated);
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-left: 8px;
+    }
+
+    /* Detail Panel */
+    .detail-panel {
+      position: fixed;
+      top: 0;
+      right: -420px;
+      width: 400px;
+      height: 100%;
+      background: var(--bg-card);
+      border-left: 1px solid var(--border);
+      padding: 24px;
+      pointer-events: auto;
+      transition: right var(--transition);
+      z-index: 200;
+      overflow-y: auto;
+    }
+
+    .detail-panel.open {
+      right: 0;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-header h2 {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      font-family: var(--font-mono);
+    }
+
+    .close-btn {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--fg-secondary);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      border-radius: var(--radius);
+      transition: all var(--transition);
+    }
+
+    .close-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .panel-content h3 {
+      font-size: 22px;
+      font-weight: 300;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+
+    .panel-content .company {
+      font-size: 14px;
+      color: var(--fg-muted);
+      margin-bottom: 24px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .detail-item {
+      background: var(--bg);
+      padding: 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .detail-item label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--fg-muted);
+      margin-bottom: 4px;
+      font-family: var(--font-mono);
+    }
+
+    .detail-item value {
+      display: block;
+      font-size: 13px;
+      color: var(--fg);
+    }
+
+    .detail-description {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--fg-secondary);
+      padding: 16px;
+      background: var(--bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .detail-description h4 {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+      margin-bottom: 8px;
+      font-family: var(--font-mono);
+    }
+
+    .panel-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition);
+      z-index: 150;
+    }
+
+    .panel-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Updates Section */
+    .updates-section {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      right: 24px;
+      max-width: 600px;
+      pointer-events: auto;
+    }
+
+    .updates-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .updates-header h3 {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      font-family: var(--font-mono);
+    }
+
+    .updates-feed {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .update-card {
+      flex-shrink: 0;
+      width: 280px;
+      background: var(--bg-card);
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+    }
+
+    .update-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .update-type {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+    }
+
+    .update-type.advance {
+      background: rgba(201, 184, 150, 0.15);
+      color: var(--gold);
+    }
+
+    .update-type.results {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--green);
+    }
+
+    .update-type.enrolled {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--blue);
+    }
+
+    .update-type.halt {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    .update-date {
+      font-size: 11px;
+      color: var(--fg-muted);
+      font-family: var(--font-mono);
+    }
+
+    .update-drug {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+
+    .update-text {
+      font-size: 12px;
+      color: var(--fg-secondary);
+      line-height: 1.5;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-elevated);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--fg-muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .legend {
+        display: none;
+      }
+
+      .detail-panel {
+        width: 100%;
+        right: -100%;
+      }
+
+      .header h1 {
+        font-size: 20px;
+      }
+
+      .updates-section {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+      }
+
+      .update-card {
+        width: 260px;
+      }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="canvas-container"></div>
+
+  <div id="ui">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">ProgRess</div>
+      <h1>Neurodegenerative Trials Terrain</h1>
+      <p>3D visualization of Alzheimer's & Parkinson's drug development pipelines</p>
+    </div>
+
+    <!-- Disease Toggle -->
+    <div class="disease-toggle">
+      <button class="toggle-btn active" data-disease="all">All</button>
+      <button class="toggle-btn" data-disease="alzheimers">Alzheimer's</button>
+      <button class="toggle-btn" data-disease="parkinsons">Parkinson's</button>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <h3>Legend</h3>
+
+      <div class="legend-section">
+        <h4>Disease</h4>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #60a5fa;"></div>
+          <span>Alzheimer's</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #f472b6;"></div>
+          <span>Parkinson's</span>
+        </div>
+      </div>
+
+      <div class="legend-section">
+        <h4>Phase</h4>
+        <div class="legend-item">
+          <div class="legend-line" style="background: #c9b896;"></div>
+          <span>Approved</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background: #a855f7;"></div>
+          <span>Phase 3 — Summit</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background: #3b82f6;"></div>
+          <span>Phase 2 — Slopes</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background: #22c55e;"></div>
+          <span>Phase 1 — Valley</span>
+        </div>
+      </div>
+
+      <div class="legend-section">
+        <h4>Type</h4>
+        <div class="legend-item">
+          <div class="legend-marker biologic"></div>
+          <span>Biologic</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-marker small-molecule"></div>
+          <span>Small Molecule</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase Labels -->
+    <div class="phase-labels">
+      <div class="phase-label">Phase 1</div>
+      <div class="phase-label">Phase 2</div>
+      <div class="phase-label">Phase 3</div>
+      <div class="phase-label" style="color: var(--gold);">Approved</div>
+    </div>
+
+    <!-- Finish Marker -->
+    <div class="finish-marker">
+      <div class="label">Approval</div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip">
+      <h4 id="tooltip-name">Drug Name</h4>
+      <div class="company" id="tooltip-company">Company</div>
+      <div class="details">
+        <div class="detail-item">
+          <span id="tooltip-phase">Phase 2</span>
+        </div>
+        <div class="detail-item">
+          <span id="tooltip-enrollment">450 enrolled</span>
+        </div>
+        <span class="status-badge" id="tooltip-status">ACTIVE</span>
+      </div>
+    </div>
+
+    <!-- Updates Section -->
+    <div class="updates-section">
+      <div class="updates-header">
+        <h3>Recent Updates</h3>
+      </div>
+      <div class="updates-feed" id="updatesFeed">
+        <!-- Updates injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Panel -->
+  <aside class="detail-panel" id="detailPanel">
+    <div class="panel-header">
+      <h2>Trial Details</h2>
+      <button class="close-btn" id="closePanel">Close</button>
+    </div>
+    <div class="panel-content" id="panelContent">
+      <!-- Content injected by JS -->
+    </div>
+  </aside>
+  <div class="panel-overlay" id="panelOverlay"></div>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
